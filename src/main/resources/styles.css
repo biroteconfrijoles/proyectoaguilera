@@ -1,0 +1,125 @@
+.root {
+    -fx-font-family: "Segoe UI";
+    -fx-background-color: #F4F7F9;
+}
+
+/* Sidebar */
+.sidebar {
+    -fx-background-color: #00529E;
+    -fx-padding: 20;
+    -fx-spacing: 15;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-cursor: hand;
+    -fx-padding: 10 15;
+    -fx-background-radius: 5;
+    -fx-font-family: "Segoe UI";
+}
+
+.nav-button:hover {
+    -fx-background-color: #013A6F;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 3);
+}
+
+.nav-button-active {
+    -fx-background-color: #F8BB00;
+    -fx-text-fill: #00529E;
+    -fx-font-weight: bold;
+}
+
+.nav-button-active:hover {
+    -fx-background-color: #E5A800;
+}
+
+/* Content Area */
+.content-area {
+    -fx-padding: 30;
+}
+
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+}
+
+/* Buttons */
+.button-primary {
+    -fx-background-color: #F8BB00;
+    -fx-text-fill: #00529E;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4;
+    -fx-padding: 10 20;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+}
+
+.button-primary:hover {
+    -fx-background-color: #E5A800;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 8, 0, 0, 4);
+}
+
+.button-danger {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4;
+    -fx-padding: 10 20;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+}
+
+.button-danger:hover {
+    -fx-background-color: #c0392b;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 8, 0, 0, 4);
+}
+
+/* Table */
+.table-view {
+    -fx-font-size: 12px;
+}
+
+.table-view .column-header {
+    -fx-background-color: #f0f0f0;
+    -fx-text-fill: #333;
+    -fx-font-weight: bold;
+}
+
+.table-view:focused {
+    -fx-focus-color: transparent;
+}
+
+/* TextFields */
+.text-field {
+    -fx-padding: 8;
+    -fx-border-radius: 4;
+    -fx-border-color: #ddd;
+    -fx-control-inner-background: white;
+}
+
+.text-field:focused {
+    -fx-border-color: #F8BB00;
+    -fx-border-width: 2;
+}
+
+/* Labels */
+.title-label {
+    -fx-font-size: 24;
+    -fx-font-weight: bold;
+    -fx-text-fill: #00529E;
+}
+
+.subtitle-label {
+    -fx-font-size: 16;
+    -fx-text-fill: #333;
+}
+
+/* Spacer */
+.spacer {
+    -fx-pref-height: 10;
+}
