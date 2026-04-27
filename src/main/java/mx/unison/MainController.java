@@ -1,5 +1,6 @@
 package mx.unison;
 
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -7,24 +8,38 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
-import javafx.collections.FXCollections;
 import javafx.stage.Stage;
-import java.sql.SQLException;
-import java.util.List;
+import mx.unison.service.AlmacenService;
+import mx.unison.service.AuthService;
+import mx.unison.service.ProductoService;
+import mx.unison.service.UsuarioService;
 
+/**
+ * Controlador del panel principal.
+ *
+ * Responsabilidades (solo UI):
+ *  - Enlazar columnas de tablas con los modelos
+ *  - Leer campos de texto y pasarlos a los servicios
+ *  - Mostrar resultados, errores y confirmaciones
+ *  - Gestionar visibilidad de vistas según el rol (via AuthService)
+ *
+ * NO valida reglas de negocio ni accede directamente a la BD.
+ * Toda lógica vive en ProductoService, AlmacenService, UsuarioService.
+ */
 public class MainController {
 
-    // ========== INYECCIONES FXML ==========
-    @FXML private VBox productosView;
-    @FXML private VBox almacenesView;
-    @FXML private VBox usuariosView;
-
+    // ── FXML: navegación ─────────────────────────────────────────────────────
     @FXML private Button btnProductos;
     @FXML private Button btnAlmacenes;
     @FXML private Button btnUsuarios;
 
-    // Columnas tabla productos
-    @FXML private TableView<Producto> tablaProductos;
+    // ── FXML: vistas ─────────────────────────────────────────────────────────
+    @FXML private VBox productosView;
+    @FXML private VBox almacenesView;
+    @FXML private VBox usuariosView;
+
+    // ── FXML: tabla productos ─────────────────────────────────────────────────
+    @FXML private TableView<Producto>           tablaProductos;
     @FXML private TableColumn<Producto, Integer> colProdId;
     @FXML private TableColumn<Producto, String>  colProdNombre;
     @FXML private TableColumn<Producto, String>  colProdDesc;
@@ -33,49 +48,118 @@ public class MainController {
     @FXML private TableColumn<Producto, String>  colProdAlmacen;
     @FXML private TableColumn<Producto, String>  colProdUsuario;
 
-    // Columnas tabla almacenes
-    @FXML private TableView<Almacen> tablaAlmacenes;
-    @FXML private TableColumn<Almacen, Integer> colAlmId;
-    @FXML private TableColumn<Almacen, String>  colAlmNombre;
-    @FXML private TableColumn<Almacen, String>  colAlmUbicacion;
-    @FXML private TableColumn<Almacen, String>  colAlmUsuario;
-
-    // Columnas tabla usuarios
-    @FXML private TableView<Usuario> tablaUsuarios;
-    @FXML private TableColumn<Usuario, String> colUsuNombre;
-    @FXML private TableColumn<Usuario, String> colUsuRol;
-
-    // Búsqueda
+    // ── FXML: campos nuevo producto ───────────────────────────────────────────
     @FXML private TextField txtSearchProductos;
-    @FXML private TextField txtSearchAlmacenes;
-    @FXML private TextField txtSearchUsuarios;
-
-    // Campos nuevo producto
     @FXML private TextField prodNombre;
     @FXML private TextField prodDesc;
     @FXML private TextField prodCantidad;
     @FXML private TextField prodPrecio;
     @FXML private TextField prodAlmacen;
 
-    // Campos nuevo almacén
+    // ── FXML: tabla almacenes ─────────────────────────────────────────────────
+    @FXML private TableView<Almacen>            tablaAlmacenes;
+    @FXML private TableColumn<Almacen, Integer>  colAlmId;
+    @FXML private TableColumn<Almacen, String>   colAlmNombre;
+    @FXML private TableColumn<Almacen, String>   colAlmUbicacion;
+    @FXML private TableColumn<Almacen, String>   colAlmUsuario;
+
+    // ── FXML: campos nuevo almacén ────────────────────────────────────────────
+    @FXML private TextField txtSearchAlmacenes;
     @FXML private TextField almNombre;
     @FXML private TextField almUbicacion;
 
-    // ========== VARIABLES ==========
-    private DatabaseManager dbManager;
-    private Database db;
-    private Usuario usuarioActual;
+    // ── FXML: tabla usuarios ──────────────────────────────────────────────────
+    @FXML private TableView<Usuario>           tablaUsuarios;
+    @FXML private TableColumn<Usuario, String>  colUsuNombre;
+    @FXML private TableColumn<Usuario, String>  colUsuRol;
+
+    @FXML private TextField txtSearchUsuarios;
+
+    // ── Servicios ─────────────────────────────────────────────────────────────
+    private AuthService     authService;
+    private ProductoService productoService;
+    @FXML private AlmacenService  almacenService;
+    private UsuarioService  usuarioService;
+
+    // ── Inicialización ────────────────────────────────────────────────────────
 
     @FXML
     public void initialize() {
+        configurarColumnas();
+        configurarBusquedaEnVivo();
+    }
+
+    /**
+     * Punto de entrada llamado por LoginController después del login exitoso.
+     * Recibe el AuthService ya autenticado y construye los demás servicios.
+     */
+    public void inicializar(AuthService authService) {
+        this.authService = authService;
+
+        Database db = new Database("jdbc:sqlite:InventarioBD.db");
+        this.productoService = new ProductoService(db);
+        this.almacenService  = new AlmacenService(db);
+
         try {
-            dbManager = new DatabaseManager();
-            db = new Database("jdbc:sqlite:InventarioBD.db");
-            configurarColumnas();
-        } catch (SQLException e) {
-            mostrarError("Error al inicializar base de datos: " + e.getMessage());
+            DatabaseManager dbManager = new DatabaseManager();
+            this.usuarioService = new UsuarioService(dbManager);
+        } catch (Exception e) {
+            mostrarError("Error al conectar con la base de datos: " + e.getMessage());
+        }
+
+        aplicarPermisosPorRol();
+        recargarTodo();
+
+        // Vista inicial según rol
+        if (authService.puedeGestionarProductos()) {
+            showProductos();
+        } else {
+            showAlmacenes();
         }
     }
+
+    // ── Permisos ──────────────────────────────────────────────────────────────
+
+    private void aplicarPermisosPorRol() {
+        // Deshabilitar botones según lo que el rol NO puede ver
+        if (!authService.puedeGestionarProductos()) {
+            btnProductos.setDisable(true);
+        }
+        if (!authService.puedeGestionarAlmacenes()) {
+            btnAlmacenes.setDisable(true);
+        }
+        if (!authService.esAdmin()) {
+            btnUsuarios.setDisable(true);
+        }
+    }
+
+    // ── Navegación ────────────────────────────────────────────────────────────
+
+    @FXML private void showProductos() {
+        activarVista(productosView, btnProductos);
+    }
+
+    @FXML private void showAlmacenes() {
+        activarVista(almacenesView, btnAlmacenes);
+    }
+
+    @FXML private void showUsuarios() {
+        activarVista(usuariosView, btnUsuarios);
+    }
+
+    private void activarVista(VBox vista, Button boton) {
+        productosView.setVisible(false); productosView.setManaged(false);
+        almacenesView.setVisible(false); almacenesView.setManaged(false);
+        usuariosView.setVisible(false);  usuariosView.setManaged(false);
+        vista.setVisible(true);          vista.setManaged(true);
+
+        btnProductos.getStyleClass().remove("nav-button-active");
+        btnAlmacenes.getStyleClass().remove("nav-button-active");
+        btnUsuarios.getStyleClass().remove("nav-button-active");
+        boton.getStyleClass().add("nav-button-active");
+    }
+
+    // ── Configuración de columnas (solo UI) ───────────────────────────────────
 
     private void configurarColumnas() {
         // Productos
@@ -98,182 +182,135 @@ public class MainController {
         if (colUsuRol    != null) colUsuRol.setCellValueFactory(new PropertyValueFactory<>("rol"));
     }
 
-    /** Llamado por LoginController tras autenticar exitosamente. */
-    public void setUsuarioActual(Usuario usuario) {
-        this.usuarioActual = usuario;
-        configurarPermisosPorRol();
-        try {
-            cargarProductos();
-            cargarAlmacenes();
-            if ("ADMIN".equals(usuario.rol)) {
-                cargarUsuarios();
-            }
-        } catch (SQLException e) {
-            mostrarError("Error al cargar datos: " + e.getMessage());
-        }
-        if ("ALMACENES".equals(usuario.rol)) {
-            showAlmacenes();
-        } else {
-            showProductos();
-        }
+    // ── Búsqueda en vivo ──────────────────────────────────────────────────────
+
+    private void configurarBusquedaEnVivo() {
+        if (txtSearchProductos != null)
+            txtSearchProductos.textProperty().addListener(
+                (obs, anterior, nuevo) -> refrescarTablaProductos(nuevo));
+
+        if (txtSearchAlmacenes != null)
+            txtSearchAlmacenes.textProperty().addListener(
+                (obs, anterior, nuevo) -> refrescarTablaAlmacenes(nuevo));
+
+        if (txtSearchUsuarios != null)
+            txtSearchUsuarios.textProperty().addListener(
+                (obs, anterior, nuevo) -> refrescarTablaUsuarios(nuevo));
     }
 
-    private void configurarPermisosPorRol() {
-        if (usuarioActual == null) return;
-        switch (usuarioActual.rol) {
-            case "PRODUCTOS":
-                btnAlmacenes.setDisable(true);
-                btnUsuarios.setDisable(true);
-                break;
-            case "ALMACENES":
-                btnProductos.setDisable(true);
-                btnUsuarios.setDisable(true);
-                break;
-            default: // ADMIN: acceso total
-                break;
+    // ── Carga / refresco de tablas ────────────────────────────────────────────
+
+    private void recargarTodo() {
+        refrescarTablaProductos(null);
+        refrescarTablaAlmacenes(null);
+        if (authService.esAdmin()) {
+            refrescarTablaUsuarios(null);
         }
     }
 
-    // ========== NAVEGACIÓN ==========
-    @FXML private void showProductos() { mostrarVista(productosView); actualizarBotonActivo(btnProductos); }
-    @FXML private void showAlmacenes() { mostrarVista(almacenesView); actualizarBotonActivo(btnAlmacenes); }
-    @FXML private void showUsuarios()  { mostrarVista(usuariosView);  actualizarBotonActivo(btnUsuarios);  }
-
-    private void mostrarVista(VBox vista) {
-        productosView.setVisible(false); productosView.setManaged(false);
-        almacenesView.setVisible(false); almacenesView.setManaged(false);
-        usuariosView.setVisible(false);  usuariosView.setManaged(false);
-        vista.setVisible(true);          vista.setManaged(true);
+    private void refrescarTablaProductos(String filtro) {
+        if (productoService == null) return;
+        tablaProductos.setItems(
+            FXCollections.observableArrayList(productoService.buscar(filtro)));
     }
 
-    private void actualizarBotonActivo(Button activo) {
-        btnProductos.getStyleClass().remove("nav-button-active");
-        btnAlmacenes.getStyleClass().remove("nav-button-active");
-        btnUsuarios.getStyleClass().remove("nav-button-active");
-        activo.getStyleClass().add("nav-button-active");
+    private void refrescarTablaAlmacenes(String filtro) {
+        if (almacenService == null) return;
+        tablaAlmacenes.setItems(
+            FXCollections.observableArrayList(almacenService.buscar(filtro)));
     }
 
-    // ========== CARGAR DATOS ==========
-    // Usamos Database (JDBC directo) para el LEFT JOIN que resuelve almacenNombre
-    @FXML
-    private void cargarProductos() throws SQLException {
-        List<Producto> productos = db.listProductos();
-        tablaProductos.setItems(FXCollections.observableArrayList(productos));
+    private void refrescarTablaUsuarios(String filtro) {
+        if (usuarioService == null) return;
+        tablaUsuarios.setItems(
+            FXCollections.observableArrayList(usuarioService.buscar(filtro)));
     }
 
-    @FXML
-    private void cargarAlmacenes() throws SQLException {
-        List<Almacen> almacenes = db.listAlmacenes();
-        tablaAlmacenes.setItems(FXCollections.observableArrayList(almacenes));
-    }
+    @FXML private void refreshProductos() { refrescarTablaProductos(txtSearchProductos.getText()); }
+    @FXML private void refreshAlmacenes() { refrescarTablaAlmacenes(txtSearchAlmacenes.getText()); }
+    @FXML private void refreshUsuarios()  { refrescarTablaUsuarios(txtSearchUsuarios.getText());   }
 
-    @FXML
-    private void cargarUsuarios() throws SQLException {
-        List<Usuario> usuarios = dbManager.getUsuarioDao().queryForAll();
-        tablaUsuarios.setItems(FXCollections.observableArrayList(usuarios));
-    }
+    // ── CRUD Productos ────────────────────────────────────────────────────────
 
-    @FXML private void refreshProductos() {
-        try { cargarProductos(); } catch (SQLException e) { mostrarError(e.getMessage()); }
-    }
-    @FXML private void refreshAlmacenes() {
-        try { cargarAlmacenes(); } catch (SQLException e) { mostrarError(e.getMessage()); }
-    }
-    @FXML private void refreshUsuarios() {
-        try { cargarUsuarios(); } catch (SQLException e) { mostrarError(e.getMessage()); }
-    }
-
-    // ========== CRUD PRODUCTOS ==========
     @FXML
     private void agregarProducto() {
         try {
-            String nombre      = prodNombre.getText().trim();
-            String descripcion = prodDesc.getText().trim();
-            String cantStr     = prodCantidad.getText().trim();
-            String precStr     = prodPrecio.getText().trim();
-            String almStr      = prodAlmacen.getText().trim();
-
-            if (nombre.isEmpty() || descripcion.isEmpty() || cantStr.isEmpty() || precStr.isEmpty()) {
-                mostrarError("Completa todos los campos obligatorios.");
-                return;
-            }
-
-            Producto p = new Producto();
-            p.nombre      = nombre;
-            p.descripcion = descripcion;
-            p.cantidad    = Integer.parseInt(cantStr);
-            p.precio      = Double.parseDouble(precStr);
-            p.almacenId   = almStr.isEmpty() ? 0 : Integer.parseInt(almStr);
-
-            db.insertProducto(p, usuarioActual != null ? usuarioActual.nombre : "Sistema");
-
-            prodNombre.clear(); prodDesc.clear();
-            prodCantidad.clear(); prodPrecio.clear(); prodAlmacen.clear();
-
-            cargarProductos();
+            productoService.agregar(
+                prodNombre.getText(),
+                prodDesc.getText(),
+                prodCantidad.getText(),
+                prodPrecio.getText(),
+                prodAlmacen.getText(),
+                authService.getNombreUsuario()
+            );
+            limpiarCamposProducto();
+            refrescarTablaProductos(txtSearchProductos.getText());
             mostrarInfo("Producto agregado correctamente.");
-        } catch (NumberFormatException e) {
-            mostrarError("Cantidad y precio deben ser valores numéricos.");
-        } catch (SQLException e) {
-            mostrarError("Error al agregar producto: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            mostrarError(e.getMessage());
         }
     }
 
     @FXML
     private void eliminarProducto() {
+        Producto sel = tablaProductos.getSelectionModel().getSelectedItem();
         try {
-            Producto sel = tablaProductos.getSelectionModel().getSelectedItem();
-            if (sel == null) { mostrarError("Selecciona un producto para eliminar."); return; }
-            if (confirmar("¿Eliminar producto?", "Se eliminará: " + sel.nombre)) {
-                db.deleteProducto(sel.id);
-                cargarProductos();
-                mostrarInfo("Producto eliminado.");
-            }
-        } catch (SQLException e) {
-            mostrarError("Error al eliminar: " + e.getMessage());
+            productoService.eliminar(sel); // lanza si sel == null
+            if (!confirmar("¿Eliminar producto?", "Se eliminará: " + sel.nombre)) return;
+            productoService.eliminar(sel);
+            refrescarTablaProductos(txtSearchProductos.getText());
+            mostrarInfo("Producto eliminado.");
+        } catch (IllegalArgumentException e) {
+            mostrarError(e.getMessage());
         }
     }
 
-    // ========== CRUD ALMACENES ==========
+    private void limpiarCamposProducto() {
+        prodNombre.clear(); prodDesc.clear();
+        prodCantidad.clear(); prodPrecio.clear(); prodAlmacen.clear();
+    }
+
+    // ── CRUD Almacenes ────────────────────────────────────────────────────────
+
     @FXML
     private void agregarAlmacen() {
         try {
-            String nombre    = almNombre.getText().trim();
-            String ubicacion = almUbicacion.getText().trim();
-            if (nombre.isEmpty() || ubicacion.isEmpty()) { mostrarError("Completa todos los campos."); return; }
-
-            db.insertAlmacen(nombre, ubicacion, usuarioActual != null ? usuarioActual.nombre : "Sistema");
-
+            almacenService.agregar(
+                almNombre.getText(),
+                almUbicacion.getText(),
+                authService.getNombreUsuario()
+            );
             almNombre.clear(); almUbicacion.clear();
-            cargarAlmacenes();
+            refrescarTablaAlmacenes(txtSearchAlmacenes.getText());
             mostrarInfo("Almacén agregado correctamente.");
-        } catch (SQLException e) {
-            mostrarError("Error al agregar almacén: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            mostrarError(e.getMessage());
         }
     }
 
     @FXML
     private void eliminarAlmacen() {
+        Almacen sel = tablaAlmacenes.getSelectionModel().getSelectedItem();
         try {
-            Almacen sel = tablaAlmacenes.getSelectionModel().getSelectedItem();
-            if (sel == null) { mostrarError("Selecciona un almacén para eliminar."); return; }
-            if (confirmar("¿Eliminar almacén?", "Se eliminará: " + sel.nombre)) {
-                db.deleteAlmacen(sel.id);
-                cargarAlmacenes();
-                mostrarInfo("Almacén eliminado.");
-            }
-        } catch (SQLException e) {
-            mostrarError("Error al eliminar: " + e.getMessage());
+            almacenService.eliminar(sel); // lanza si sel == null
+            if (!confirmar("¿Eliminar almacén?", "Se eliminará: " + sel.nombre)) return;
+            almacenService.eliminar(sel);
+            refrescarTablaAlmacenes(txtSearchAlmacenes.getText());
+            mostrarInfo("Almacén eliminado.");
+        } catch (IllegalArgumentException e) {
+            mostrarError(e.getMessage());
         }
     }
 
-    // ========== CERRAR SESIÓN ==========
+    // ── Cerrar sesión ─────────────────────────────────────────────────────────
+
     @FXML
     private void handleLogout() {
-        try {
-            if (!confirmar("Cerrar sesión", "¿Seguro que deseas cerrar sesión?")) return;
-            if (dbManager != null) dbManager.close();
+        if (!confirmar("Cerrar sesión", "¿Seguro que deseas cerrar sesión?")) return;
 
+        authService.logout();
+
+        try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/login_view.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root);
@@ -291,10 +328,11 @@ public class MainController {
         }
     }
 
-    // ========== UTILIDADES ==========
-    private boolean confirmar(String titulo, String mensaje) {
+    // ── Helpers de UI ─────────────────────────────────────────────────────────
+
+    private boolean confirmar(String titulo, String contenido) {
         Alert a = new Alert(Alert.AlertType.CONFIRMATION);
-        a.setTitle(titulo); a.setHeaderText(null); a.setContentText(mensaje);
+        a.setTitle(titulo); a.setHeaderText(null); a.setContentText(contenido);
         return a.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
     }
 

@@ -1,0 +1,68 @@
+package mx.unison.service;
+
+import mx.unison.Database;
+import mx.unison.Usuario;
+
+/**
+ * Servicio de autenticación.
+ * Encapsula toda la lógica relacionada con el login y la sesión activa.
+ * El controlador solo llama a este servicio; no conoce la BD directamente.
+ */
+public class AuthService {
+
+    private final Database db;
+    private Usuario usuarioActual;
+
+    public AuthService(Database db) {
+        this.db = db;
+    }
+
+    /**
+     * Intenta autenticar con las credenciales dadas.
+     * @return true si el login fue exitoso, false en caso contrario.
+     */
+    public boolean login(String nombre, String password) {
+        if (nombre == null || nombre.isBlank() || password == null || password.isBlank()) {
+            return false;
+        }
+        Usuario u = db.authenticate(nombre.trim().toUpperCase(), password);
+        if (u != null) {
+            usuarioActual = u;
+            return true;
+        }
+        return false;
+    }
+
+    /** Cierra la sesión actual. */
+    public void logout() {
+        usuarioActual = null;
+    }
+
+    /** Devuelve el usuario autenticado, o null si no hay sesión. */
+    public Usuario getUsuarioActual() {
+        return usuarioActual;
+    }
+
+    /** Verifica si hay una sesión activa. */
+    public boolean haySesion() {
+        return usuarioActual != null;
+    }
+
+    // ── Helpers de rol ───────────────────────────────────────────────────────
+
+    public boolean esAdmin() {
+        return haySesion() && "ADMIN".equals(usuarioActual.rol);
+    }
+
+    public boolean puedeGestionarProductos() {
+        return haySesion() && (esAdmin() || "PRODUCTOS".equals(usuarioActual.rol));
+    }
+
+    public boolean puedeGestionarAlmacenes() {
+        return haySesion() && (esAdmin() || "ALMACENES".equals(usuarioActual.rol));
+    }
+
+    public String getNombreUsuario() {
+        return haySesion() ? usuarioActual.nombre : "Sistema";
+    }
+}
