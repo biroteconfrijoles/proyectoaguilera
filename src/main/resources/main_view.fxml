@@ -4,119 +4,124 @@
 <?import javafx.scene.text.*?>
 <?import javafx.geometry.Insets?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml" 
-            fx:controller="mx.unison.MainController" 
-            prefHeight="750" 
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="mx.unison.MainController"
+            prefHeight="750"
             prefWidth="1100">
-    
+
     <!-- SIDEBAR IZQUIERDA -->
     <left>
         <VBox styleClass="sidebar" prefWidth="220" spacing="15" style="-fx-padding: 20;">
             <Text text="INVENTARIO" fill="WHITE" style="-fx-font-size: 20; -fx-font-weight: bold;"/>
             <Region prefHeight="30"/>
-            
+
             <Button fx:id="btnProductos" text="📦 Productos" styleClass="nav-button,nav-button-active" maxWidth="Infinity" onAction="#showProductos"/>
             <Button fx:id="btnAlmacenes" text="🏢 Almacenes" styleClass="nav-button" maxWidth="Infinity" onAction="#showAlmacenes"/>
-            <Button fx:id="btnUsuarios" text="👤 Usuarios" styleClass="nav-button" maxWidth="Infinity" onAction="#showUsuarios"/>
-            
+            <Button fx:id="btnUsuarios"  text="👤 Usuarios"  styleClass="nav-button" maxWidth="Infinity" onAction="#showUsuarios"/>
+
             <Region VBox.vgrow="ALWAYS"/>
-            <Button text="🚪 Cerrar Sesión" styleClass="nav-button" maxWidth="Infinity" onAction="#handleLogout" style="-fx-text-fill: #FF6B6B;"/>
+            <Button text="🚪 Cerrar Sesión" styleClass="nav-button" maxWidth="Infinity"
+                    onAction="#handleLogout" style="-fx-text-fill: #FF6B6B;"/>
         </VBox>
     </left>
-    
-    <!-- ÁREA DE CONTENIDO CENTRAL -->
+
+    <!-- ÁREA DE CONTENIDO -->
     <center>
         <ScrollPane fitToWidth="true" style="-fx-fitToHeight: true;">
             <StackPane fx:id="contentArea" styleClass="content-area">
-                <!-- VISTA DE PRODUCTOS (por defecto) -->
+
+                <!-- ══════════════ PRODUCTOS ══════════════ -->
                 <VBox fx:id="productosView" spacing="20" alignment="TOP_LEFT">
-                    <VBox.margin>
-                        <Insets top="0" left="0" right="0" bottom="0"/>
-                    </VBox.margin>
-                    
                     <Label text="Panel de Productos" styleClass="title-label"/>
-                    
+
                     <VBox styleClass="card" spacing="15" VBox.vgrow="ALWAYS">
                         <HBox spacing="10" alignment="CENTER_LEFT">
-                            <TextField fx:id="txtSearchProductos" promptText="Buscar productos..." style="-fx-pref-width: 250;"/>
+                            <TextField fx:id="txtSearchProductos" promptText="Buscar productos..." prefWidth="250"/>
                             <Region HBox.hgrow="ALWAYS"/>
-                            <Button text="🔄 Actualizar" style="-fx-background-color: #3498db; -fx-text-fill: white;" onAction="#refreshProductos"/>
+                            <Button text="🔄 Actualizar"
+                                    style="-fx-background-color: #3498db; -fx-text-fill: white;"
+                                    onAction="#refreshProductos"/>
                         </HBox>
-                        
-                        <TableView fx:id="tablaProductos" VBox.vgrow="ALWAYS">
+
+                        <TableView fx:id="tablaProductos" VBox.vgrow="ALWAYS" prefHeight="420">
                             <columns>
-                                <TableColumn text="ID" prefWidth="40"/>
-                                <TableColumn text="Nombre" prefWidth="150"/>
-                                <TableColumn text="Descripción" prefWidth="200"/>
-                                <TableColumn text="Cantidad" prefWidth="80"/>
-                                <TableColumn text="Precio" prefWidth="100"/>
-                                <TableColumn text="Almacén" prefWidth="120"/>
-                                <TableColumn text="Último Usuario" prefWidth="120"/>
+                                <TableColumn fx:id="colProdId"       text="ID"             prefWidth="45"/>
+                                <TableColumn fx:id="colProdNombre"   text="Nombre"         prefWidth="150"/>
+                                <TableColumn fx:id="colProdDesc"     text="Descripción"    prefWidth="195"/>
+                                <TableColumn fx:id="colProdCantidad" text="Cantidad"       prefWidth="75"/>
+                                <TableColumn fx:id="colProdPrecio"   text="Precio"         prefWidth="90"/>
+                                <TableColumn fx:id="colProdAlmacen"  text="Almacén"        prefWidth="130"/>
+                                <TableColumn fx:id="colProdUsuario"  text="Último Usuario" prefWidth="120"/>
                             </columns>
                         </TableView>
-                        
-                        <HBox spacing="10" style="-fx-padding: 10 0 0 0;">
+
+                        <HBox spacing="8" style="-fx-padding: 10 0 0 0;" alignment="CENTER_LEFT">
                             <Label text="Nuevo Producto:" style="-fx-font-weight: bold;"/>
-                            <TextField fx:id="prodNombre" promptText="Nombre" prefWidth="120"/>
-                            <TextField fx:id="prodDesc" promptText="Descripción" prefWidth="150"/>
-                            <TextField fx:id="prodCantidad" promptText="Cantidad" prefWidth="80"/>
-                            <TextField fx:id="prodPrecio" promptText="Precio" prefWidth="80"/>
-                            <TextField fx:id="prodAlmacen" promptText="ID Almacén" prefWidth="80"/>
-                            <Button text="✓ Agregar" styleClass="button-primary" onAction="#agregarProducto"/>
-                            <Button text="✗ Eliminar" styleClass="button-danger" onAction="#eliminarProducto"/>
+                            <TextField fx:id="prodNombre"   promptText="Nombre"      prefWidth="120"/>
+                            <TextField fx:id="prodDesc"     promptText="Descripción" prefWidth="150"/>
+                            <TextField fx:id="prodCantidad" promptText="Cantidad"    prefWidth="75"/>
+                            <TextField fx:id="prodPrecio"   promptText="Precio"      prefWidth="75"/>
+                            <TextField fx:id="prodAlmacen"  promptText="ID Almacén"  prefWidth="80"/>
+                            <Button text="✓ Agregar"  styleClass="button-primary" onAction="#agregarProducto"/>
+                            <Button text="✗ Eliminar" styleClass="button-danger"  onAction="#eliminarProducto"/>
                         </HBox>
                     </VBox>
                 </VBox>
-                
-                <!-- VISTA DE ALMACENES (oculta por defecto) -->
+
+                <!-- ══════════════ ALMACENES ══════════════ -->
                 <VBox fx:id="almacenesView" spacing="20" alignment="TOP_LEFT" visible="false" managed="false">
                     <Label text="Panel de Almacenes" styleClass="title-label"/>
-                    
+
                     <VBox styleClass="card" spacing="15" VBox.vgrow="ALWAYS">
                         <HBox spacing="10" alignment="CENTER_LEFT">
-                            <TextField fx:id="txtSearchAlmacenes" promptText="Buscar almacenes..." style="-fx-pref-width: 250;"/>
+                            <TextField fx:id="txtSearchAlmacenes" promptText="Buscar almacenes..." prefWidth="250"/>
                             <Region HBox.hgrow="ALWAYS"/>
-                            <Button text="🔄 Actualizar" style="-fx-background-color: #3498db; -fx-text-fill: white;" onAction="#refreshAlmacenes"/>
+                            <Button text="🔄 Actualizar"
+                                    style="-fx-background-color: #3498db; -fx-text-fill: white;"
+                                    onAction="#refreshAlmacenes"/>
                         </HBox>
-                        
-                        <TableView fx:id="tablaAlmacenes" VBox.vgrow="ALWAYS">
+
+                        <TableView fx:id="tablaAlmacenes" VBox.vgrow="ALWAYS" prefHeight="420">
                             <columns>
-                                <TableColumn text="ID" prefWidth="40"/>
-                                <TableColumn text="Nombre" prefWidth="150"/>
-                                <TableColumn text="Ubicación" prefWidth="300"/>
-                                <TableColumn text="Último Usuario" prefWidth="120"/>
+                                <TableColumn fx:id="colAlmId"        text="ID"             prefWidth="45"/>
+                                <TableColumn fx:id="colAlmNombre"    text="Nombre"         prefWidth="200"/>
+                                <TableColumn fx:id="colAlmUbicacion" text="Ubicación"      prefWidth="340"/>
+                                <TableColumn fx:id="colAlmUsuario"   text="Último Usuario" prefWidth="120"/>
                             </columns>
                         </TableView>
-                        
-                        <HBox spacing="10" style="-fx-padding: 10 0 0 0;">
+
+                        <HBox spacing="8" style="-fx-padding: 10 0 0 0;" alignment="CENTER_LEFT">
                             <Label text="Nuevo Almacén:" style="-fx-font-weight: bold;"/>
-                            <TextField fx:id="almNombre" promptText="Nombre" prefWidth="150"/>
-                            <TextField fx:id="almUbicacion" promptText="Ubicación" prefWidth="200"/>
-                            <Button text="✓ Agregar" styleClass="button-primary" onAction="#agregarAlmacen"/>
-                            <Button text="✗ Eliminar" styleClass="button-danger" onAction="#eliminarAlmacen"/>
+                            <TextField fx:id="almNombre"    promptText="Nombre"    prefWidth="180"/>
+                            <TextField fx:id="almUbicacion" promptText="Ubicación" prefWidth="250"/>
+                            <Button text="✓ Agregar"  styleClass="button-primary" onAction="#agregarAlmacen"/>
+                            <Button text="✗ Eliminar" styleClass="button-danger"  onAction="#eliminarAlmacen"/>
                         </HBox>
                     </VBox>
                 </VBox>
-                
-                <!-- VISTA DE USUARIOS (oculta por defecto) -->
+
+                <!-- ══════════════ USUARIOS ══════════════ -->
                 <VBox fx:id="usuariosView" spacing="20" alignment="TOP_LEFT" visible="false" managed="false">
                     <Label text="Panel de Usuarios" styleClass="title-label"/>
-                    
+
                     <VBox styleClass="card" spacing="15" VBox.vgrow="ALWAYS">
                         <HBox spacing="10" alignment="CENTER_LEFT">
-                            <TextField fx:id="txtSearchUsuarios" promptText="Buscar usuarios..." style="-fx-pref-width: 250;"/>
+                            <TextField fx:id="txtSearchUsuarios" promptText="Buscar usuarios..." prefWidth="250"/>
                             <Region HBox.hgrow="ALWAYS"/>
-                            <Button text="🔄 Actualizar" style="-fx-background-color: #3498db; -fx-text-fill: white;" onAction="#refreshUsuarios"/>
+                            <Button text="🔄 Actualizar"
+                                    style="-fx-background-color: #3498db; -fx-text-fill: white;"
+                                    onAction="#refreshUsuarios"/>
                         </HBox>
-                        
-                        <TableView fx:id="tablaUsuarios" VBox.vgrow="ALWAYS">
+
+                        <TableView fx:id="tablaUsuarios" VBox.vgrow="ALWAYS" prefHeight="420">
                             <columns>
-                                <TableColumn text="Nombre" prefWidth="150"/>
-                                <TableColumn text="Rol" prefWidth="200"/>
+                                <TableColumn fx:id="colUsuNombre" text="Nombre" prefWidth="200"/>
+                                <TableColumn fx:id="colUsuRol"    text="Rol"    prefWidth="250"/>
                             </columns>
                         </TableView>
                     </VBox>
                 </VBox>
+
             </StackPane>
         </ScrollPane>
     </center>

@@ -1,9 +1,127 @@
+/* =============================================
+   BASE
+   ============================================= */
 .root {
     -fx-font-family: "Segoe UI";
     -fx-background-color: #F4F7F9;
 }
 
-/* Sidebar */
+/* =============================================
+   LOGIN
+   ============================================= */
+.login-root {
+    -fx-background-color: transparent;
+}
+
+.login-brand-panel {
+    -fx-background-color: #00529E;
+    -fx-padding: 60;
+    -fx-min-width: 380;
+    -fx-max-width: 420;
+}
+
+.brand-title {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 48px;
+    -fx-font-weight: bold;
+    -fx-fill: white;
+    -fx-letter-spacing: 6px;
+}
+
+.brand-sub {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 26px;
+    -fx-fill: #F8BB00;
+    -fx-font-weight: bold;
+}
+
+.brand-desc {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-fill: rgba(255,255,255,0.75);
+}
+
+.login-form-panel {
+    -fx-background-color: white;
+    -fx-padding: 60;
+}
+
+.form-title {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-fill: #1a1a2e;
+}
+
+.form-subtitle {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-fill: #888;
+}
+
+.field-label {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #444;
+}
+
+.login-field {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-padding: 12 14;
+    -fx-border-color: #ddd;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-background-color: #fafafa;
+    -fx-pref-height: 44px;
+}
+
+.login-field:focused {
+    -fx-border-color: #00529E;
+    -fx-border-width: 2;
+    -fx-background-color: white;
+}
+
+.btn-login {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-color: #00529E;
+    -fx-text-fill: white;
+    -fx-padding: 13 0;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+    -fx-pref-height: 46px;
+}
+
+.btn-login:hover {
+    -fx-background-color: #013A6F;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,82,158,0.35), 10, 0, 0, 4);
+}
+
+.btn-login:pressed {
+    -fx-background-color: #F8BB00;
+    -fx-text-fill: #00529E;
+}
+
+.error-label {
+    -fx-text-fill: #c0392b;
+    -fx-font-size: 12px;
+    -fx-font-family: "Segoe UI";
+    -fx-wrap-text: true;
+}
+
+.footer-text {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 11px;
+    -fx-fill: #bbb;
+}
+
+/* =============================================
+   SIDEBAR
+   ============================================= */
 .sidebar {
     -fx-background-color: #00529E;
     -fx-padding: 20;
@@ -36,7 +154,9 @@
     -fx-background-color: #E5A800;
 }
 
-/* Content Area */
+/* =============================================
+   CONTENT AREA
+   ============================================= */
 .content-area {
     -fx-padding: 30;
 }
@@ -48,7 +168,9 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
 }
 
-/* Buttons */
+/* =============================================
+   BUTTONS
+   ============================================= */
 .button-primary {
     -fx-background-color: #F8BB00;
     -fx-text-fill: #00529E;
@@ -79,7 +201,9 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 8, 0, 0, 4);
 }
 
-/* Table */
+/* =============================================
+   TABLE
+   ============================================= */
 .table-view {
     -fx-font-size: 12px;
 }
@@ -94,7 +218,9 @@
     -fx-focus-color: transparent;
 }
 
-/* TextFields */
+/* =============================================
+   TEXT FIELDS (main panel)
+   ============================================= */
 .text-field {
     -fx-padding: 8;
     -fx-border-radius: 4;
@@ -107,7 +233,9 @@
     -fx-border-width: 2;
 }
 
-/* Labels */
+/* =============================================
+   LABELS
+   ============================================= */
 .title-label {
     -fx-font-size: 24;
     -fx-font-weight: bold;
@@ -119,7 +247,6 @@
     -fx-text-fill: #333;
 }
 
-/* Spacer */
 .spacer {
     -fx-pref-height: 10;
 }

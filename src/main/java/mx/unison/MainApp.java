@@ -11,32 +11,26 @@ public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         try {
-            // Cargar el archivo FXML
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/main_view.fxml"));
+            // Cargar la pantalla de LOGIN (no el panel principal)
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/login_view.fxml"));
             Parent root = loader.load();
-            
-            // Crear la escena
+
             Scene scene = new Scene(root);
-            
+
             // Aplicar estilos CSS
             String css = getClass().getResource("/styles.css").toExternalForm();
             scene.getStylesheets().add(css);
-            
-            // Configurar el escenario
-            primaryStage.setTitle("Sistema de Inventario Unison - JavaFX");
+
+            primaryStage.setTitle("Sistema de Inventario Unison - Iniciar sesión");
             primaryStage.setScene(scene);
-            primaryStage.setWidth(1100);
-            primaryStage.setHeight(750);
-            primaryStage.setOnCloseRequest(e -> {
-                try {
-                    // Aquí podrías cerrar la conexión a BD si es necesario
-                    System.exit(0);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            });
-            
+            primaryStage.setWidth(900);
+            primaryStage.setHeight(550);
+            primaryStage.setResizable(false);
+            primaryStage.centerOnScreen();
+
+            primaryStage.setOnCloseRequest(e -> System.exit(0));
             primaryStage.show();
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Error al cargar la interfaz: " + e.getMessage());

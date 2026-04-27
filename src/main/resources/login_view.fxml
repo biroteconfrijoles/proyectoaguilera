@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="mx.unison.LoginController"
+           prefHeight="550" prefWidth="900"
+           styleClass="login-root">
+
+    <!-- Fondo dividido -->
+    <HBox>
+        <!-- Panel izquierdo (marca) -->
+        <VBox styleClass="login-brand-panel" alignment="CENTER" HBox.hgrow="ALWAYS">
+            <VBox alignment="CENTER" spacing="16">
+                <Text text="UNISON" styleClass="brand-title"/>
+                <Text text="Sistema de" styleClass="brand-sub"/>
+                <Text text="Inventario" styleClass="brand-sub"/>
+                <Region prefHeight="20"/>
+                <Text text="Gestiona productos, almacenes" styleClass="brand-desc"/>
+                <Text text="y usuarios desde un solo lugar." styleClass="brand-desc"/>
+            </VBox>
+        </VBox>
+
+        <!-- Panel derecho (formulario) -->
+        <VBox styleClass="login-form-panel" alignment="CENTER" HBox.hgrow="ALWAYS" spacing="0">
+            <VBox alignment="CENTER" spacing="24" maxWidth="360">
+                <VBox spacing="6" alignment="CENTER">
+                    <Text text="Iniciar sesión" styleClass="form-title"/>
+                    <Text text="Ingresa tus credenciales para continuar" styleClass="form-subtitle"/>
+                </VBox>
+
+                <VBox spacing="18" maxWidth="320">
+                    <!-- Usuario -->
+                    <VBox spacing="6">
+                        <Label text="Usuario" styleClass="field-label"/>
+                        <TextField fx:id="txtUsuario"
+                                   promptText="Ej. ADMIN"
+                                   styleClass="login-field"
+                                   maxWidth="320"/>
+                    </VBox>
+
+                    <!-- Contraseña -->
+                    <VBox spacing="6">
+                        <Label text="Contraseña" styleClass="field-label"/>
+                        <PasswordField fx:id="txtPassword"
+                                       promptText="••••••••"
+                                       styleClass="login-field"
+                                       maxWidth="320"
+                                       onAction="#handleLogin"/>
+                    </VBox>
+
+                    <!-- Error -->
+                    <Label fx:id="lblError"
+                           text=""
+                           styleClass="error-label"
+                           maxWidth="320"
+                           wrapText="true"/>
+
+                    <!-- Botón -->
+                    <Button text="Entrar al sistema"
+                            styleClass="btn-login"
+                            maxWidth="320"
+                            onAction="#handleLogin"/>
+                </VBox>
+
+                <Text text="© 2026 Universidad de Sonora" styleClass="footer-text"/>
+            </VBox>
+        </VBox>
+    </HBox>
+</StackPane>
