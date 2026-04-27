@@ -6,8 +6,25 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+/**
+ * Aplicación principal del Sistema de Inventario Unison.
+ * Punto de entrada de la aplicación JavaFX que carga la interfaz de usuario
+ * y gestiona la ventana principal.
+ * 
+ * @author Sistema de Inventario Unison
+ * @version 1.0-SNAPSHOT
+ * @see LoginController
+ * @see MainController
+ */
 public class MainApp extends Application {
 
+    /**
+     * Inicia la aplicación cargando la pantalla de login.
+     * Configura la escena con estilos CSS y establece propiedades de la ventana.
+     * 
+     * @param primaryStage la ventana principal de la aplicación
+     * @throws Exception si hay error al cargar la interfaz FXML
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         try {
@@ -37,6 +54,11 @@ public class MainApp extends Application {
         }
     }
 
+    /**
+     * Método principal que inicia la aplicación JavaFX.
+     * 
+     * @param args argumentos de línea de comandos
+     */
     public static void main(String[] args) {
         launch(args);
     }
